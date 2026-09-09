@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { getAppointments, cancelAppointment } from "./api";
+import { getAppointments, cancelAppointment, uncancelAppointment } from "./api";
 
 function Appointments({ patientName }) {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [cancellingId, setCancellingId] = useState(null);
+    const [uncancellingId, setUncancellingId] = useState(null);
     const [message, setMessage] = useState(null);
 
     const load = () => {
@@ -36,6 +37,20 @@ function Appointments({ patientName }) {
         }
     };
 
+    const handleUncancel = async (id) => {
+        setUncancellingId(id);
+        setMessage(null);
+        try {
+            await uncancelAppointment(id);
+            setMessage({ type: "success", text: "Appointment restored." });
+            load();
+        } catch {
+            setMessage({ type: "error", text: "Couldn't restore. Please try again." });
+        } finally {
+            setUncancellingId(null);
+        }
+    };
+
     if (!patientName.trim()) {
         return <div className="status">Enter your name above to see your appointments.</div>;
     }
@@ -63,6 +78,15 @@ function Appointments({ patientName }) {
             {a.status === "booked" && new Date(a.start_time) >= now && (
                 <button className="cancel-btn" onClick={() => handleCancel(a.id)} disabled={cancellingId === a.id}>
                     {cancellingId === a.id ? "Cancelling..." : "Cancel"}
+                </button>
+            )}
+            {a.status === "cancelled" && new Date(a.start_time) >= now && (
+                <button
+                    className="uncancel-btn"
+                    onClick={() => handleUncancel(a.id)}
+                    disabled={uncancellingId === a.id}
+                >
+                    {uncancellingId === a.id ? "Restoring..." : "Uncancel"}
                 </button>
             )}
         </div>

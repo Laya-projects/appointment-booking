@@ -12,3 +12,6 @@ export const getAppointments = (patientName) =>
 
 export const cancelAppointment = (appointmentId) =>
     axios.patch(`${API_BASE}/appointments/${appointmentId}/cancel`);
+
+export const uncancelAppointment = (id) =>
+    axios.patch(`${API_BASE}/appointments/${id}/uncancel`);
